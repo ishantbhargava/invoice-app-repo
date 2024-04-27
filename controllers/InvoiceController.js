@@ -13,11 +13,11 @@ const InvoiceController = async (req, res) => {
       companyEmail,
     } = req.body;
 
-    const invoiceProducts = products.map((product) => ({
-      productName: product.productName,
-      price: product.price,
-      quantity: product.quantity,
-    }));
+    // const invoiceProducts = products.map((product) => ({
+    //   productName: product.productName,
+    //   price: product.price,
+    //   quantity: product.quantity,
+    // }));
 
     const invoice = await new InvoiceModel({
       currentDate,
@@ -27,6 +27,7 @@ const InvoiceController = async (req, res) => {
       companyName,
       companyAddress,
       companyEmail,
+      createdBy: req.user._id,
       slug: slugify(companyName),
     }).save();
     res.status(200).send({
@@ -64,7 +65,7 @@ const getInvoiceController = async (req, res) => {
 };
 const getAllInvoicesController = async (req, res) => {
   try {
-    const invoices = await InvoiceModel.find();
+    const invoices = await InvoiceModel.find({ createdBy: req.user._id });
     res.status(200).json({
       success: true,
       message: "got all values",

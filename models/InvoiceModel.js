@@ -9,15 +9,20 @@ const productSchema = new mongoose.Schema({
   },
   quantity: {
     type: Number,
-  }
+  },
 });
 
 const invoiceSchema = new mongoose.Schema({
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   currentDate: {
     type: String,
     required: true,
   },
-  products:[productSchema],
+  products: [productSchema],
 
   companyName: {
     type: String,
