@@ -1,0 +1,3 @@
+[build]
+  command = "node Server.js"
+  functions = "Server.js"
