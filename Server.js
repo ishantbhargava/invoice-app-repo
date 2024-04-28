@@ -12,14 +12,10 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-app.use(express.static(path.resolve(__dirname, "frontend", "build")));
 
 app.use("/api/v1/auth/", AuthRoute);
 app.use("/api/v1/invoice/", InvoiceRoute);
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
-});
 
 const PORT = process.env.PORT || 9999;
 app.listen(PORT, () => {
