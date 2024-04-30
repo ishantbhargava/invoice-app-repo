@@ -85,9 +85,9 @@ const signInController = async (req, res) => {
 
 const forgetPasswordController = async (req, res) => {
   try {
-    const { email, answer, newPassword } = req.body;
+    const { email,  newPassword } = req.body;
     //user;
-    const user = await UserModel.findOne({ email, answer });
+    const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(404).send({
         success: false,
@@ -115,5 +115,4 @@ module.exports = {
   signupController,
   signInController,
   forgetPasswordController,
-
 };
