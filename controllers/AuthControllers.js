@@ -4,9 +4,9 @@ const { comparePassword } = require("../helper/AuthHelper");
 const JWT = require("jsonwebtoken");
 const InvoiceModel = require("../models/InvoiceModel");
 //signupcontroller
-const signupController = async (req, res) => {
+const signup = async (req, res) => {
   try {
-    const { email, password, answer } = req.body;
+    const { email, password } = req.body;
 
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -19,10 +19,9 @@ const signupController = async (req, res) => {
 
     const user = await new UserModel({
       email,
-      answer,
       password: hashedPassword,
     }).save();
-    res.status(200).send({
+    res.status(201).send({
       success: true,
       message: "user register successfully",
       user,
@@ -33,29 +32,28 @@ const signupController = async (req, res) => {
       success: false,
 
       message: "err in registration",
-      error,
     });
   }
 };
-const signInController = async (req, res) => {
+const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(200).send({
+      return res.status(502).send({
         success: false,
         message: "invalid email or password",
       });
     }
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.status(200).send({
+      return res.status(502).send({
         success: false,
         message: "email  is not registered",
       });
     }
     const match = await comparePassword(password, user.password);
     if (!match) {
-      return res.status(200).send({
+      return res.status(502).send({
         success: false,
         message: "invalid password",
       });
@@ -78,20 +76,19 @@ const signInController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "error in login",
-      error,
     });
   }
 };
 
-const forgetPasswordController = async (req, res) => {
+const forget = async (req, res) => {
   try {
-    const { email,  newPassword } = req.body;
+    const { email, newPassword } = req.body;
     //user;
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(404).send({
         success: false,
-        message: "wrong email or answer ",
+        message: "wrong email ",
       });
     }
     const hashedPassword = await hashPassword(newPassword);
@@ -112,7 +109,7 @@ const forgetPasswordController = async (req, res) => {
 };
 
 module.exports = {
-  signupController,
-  signInController,
-  forgetPasswordController,
+  signup,
+  signIn,
+  forget,
 };

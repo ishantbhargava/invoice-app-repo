@@ -1,7 +1,7 @@
 const InvoiceModel = require("./../models/InvoiceModel");
 const slugify = require("slugify");
 
-const InvoiceController = async (req, res) => {
+const create = async (req, res) => {
   try {
     const {
       currentDate,
@@ -13,13 +13,8 @@ const InvoiceController = async (req, res) => {
       companyEmail,
     } = req.body;
 
-    // const invoiceProducts = products.map((product) => ({
-    //   productName: product.productName,
-    //   price: product.price,
-    //   quantity: product.quantity,
-    // }));
-
-    const invoice = await new InvoiceModel({
+    const newSlug = slugify(companyName, { lower: true });
+    const invoice = new InvoiceModel({
       currentDate,
       products,
       price,
@@ -28,106 +23,131 @@ const InvoiceController = async (req, res) => {
       companyAddress,
       companyEmail,
       createdBy: req.user._id,
-      slug: slugify(companyName),
-    }).save();
+      slug: newSlug,
+    });
+
+    await invoice.save();
     res.status(200).send({
-      success: "true",
-      message: "your invoice created",
+      success: true,
+      message: "Invoice created successfully",
       invoice,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error creating invoice:", error);
     res.status(500).send({
       success: false,
-      message: "somthing went wrong",
-      error,
+      message: "Something went wrong",
     });
   }
 };
 
-const getInvoiceController = async (req, res) => {
+const get = async (req, res) => {
   try {
-    const invoice = await InvoiceModel.findOne({
-      slug: req.params.slug,
-    });
+    const { slug } = req.params;
+    const invoice = await InvoiceModel.findOne({ slug });
+    if (!invoice) {
+      return res.status(404).send({
+        success: false,
+        message: "Invoice not found",
+      });
+    }
+
     res.status(200).send({
       success: true,
-      message: "got all values",
-      invoice,
+      message: "Invoice retrieved successfully",
+      invoice
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.error("Error fetching invoice:", error);
     res.status(500).send({
       success: false,
-      message: "err while getting all values",
+      message: "Error while fetching the invoice",
+
     });
   }
 };
-const getAllInvoicesController = async (req, res) => {
+
+const getAll = async (req, res) => {
   try {
     const invoices = await InvoiceModel.find({ createdBy: req.user._id });
     res.status(200).json({
       success: true,
-      message: "got all values",
+      message: "Invoices retrieved successfully",
       invoices,
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
     res.status(500).send({
       success: false,
-      message: "err while getting all values",
+      message: "Error while fetching invoices",
     });
   }
 };
 
-const deleteInvoiceController = async (req, res) => {
+const deleteInv = async (req, res) => {
   try {
-    await InvoiceModel.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    const invoice = await InvoiceModel.findByIdAndDelete(id);
+
+    if (!invoice) {
+      return res.status(404).send({
+        success: false,
+        message: "Invoice not found",
+      });
+    }
+
     res.status(200).send({
       success: true,
-      message: "invoice deleted successFully",
+      message: "Invoice deleted successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting invoice:", error);
     res.status(500).send({
       success: false,
-      error,
-      message: "error in deleting invoice",
+      message: "Error in deleting invoice",
     });
   }
 };
-const updateInvoiceController = async (req, res) => {
+
+const update = async (req, res) => {
   try {
+    const { slug } = req.params;
     const { companyAddress, companyEmail, companyName, products } = req.body;
 
-    const invoice = await InvoiceModel.findOne({ slug: req.params.slug });
+    const invoice = await InvoiceModel.findOne({ slug });
+
+    if (!invoice) {
+      return res.status(404).send({
+        success: false,
+        message: "Invoice not found",
+      });
+    }
+
     invoice.products = products;
     invoice.companyName = companyName;
-    invoice.slug = slugify(companyName);
+    invoice.slug = slugify(companyName, { lower: true });
     invoice.companyEmail = companyEmail;
     invoice.companyAddress = companyAddress;
+
     await invoice.save();
 
-    res.status(201).send({
+    res.status(200).send({
       success: true,
-      message: "invoices updated successfully",
+      message: "Invoice updated successfully",
       invoice,
     });
   } catch (error) {
-    console.error(error);
-
+    console.error("Error updating invoice:", error);
     res.status(500).send({
       success: false,
-      error,
-      message: "Error in updating invoices",
+      message: "Error in updating invoice",
     });
   }
 };
 
 module.exports = {
-  InvoiceController,
-  getInvoiceController,
-  deleteInvoiceController,
-  getAllInvoicesController,
-  updateInvoiceController,
+  create,
+  get,
+  getAll,
+  deleteInv,
+  update,
 };
